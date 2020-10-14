@@ -1,0 +1,63 @@
+bash-2.03# more ftptest
+#!/bin/sh
+############################################################################
+# THIS APPLICATIONIS USED TO GET THE FILES USING FTP
+# Author :Nanz
+########################################################################
+enc=`cat .hash`
+crypt $enc<.detail > detail1
+PATH=$PATH:/usr/sbin:/usr/bin
+NETdir=/opt/nanz/scripts/ftpin    # this is directory in local machine where ftp
+ get the files
+NETRdir=/opt/ftp    # this is the remote directory from where files are fetched
+dir=/opt/nanz/scripts #
+host=`cat detail1|awk ' { print $1 }'`
+user=`cat detail1|awk ' { print $2 }'`
+pass=`cat detail1|awk ' { print $3 }'`
+cd $NETdir
+if [ `ls -lt|grep -v total|wc -l` -gt 0 ]
+then
+rm *
+fi
+ 
+ftpget ()
+{
+   ftp -ni $host <<EOT
+  user $user $pass
+  cd $NETRdir
+   lcd $NETdir
+ mget *
+  bye
+EOT
+}
+ftpget >/dev/null
+ ftpdel ()
+{
+ 
+ ftp -ni $host <<EOT
+ user $user $pass
+cd $NETRdir
+dele $filename
+bye
+EOT
+}
+ 
+ 
+ cd $NETdir
+if [ `ls -lt|grep -v total|wc -l` -eq 0 ]
+then
+echo "Zero files are tranfered from the host $host"
+else
+echo "There are `ls -lt|wc -l` files are transfered to local host"
+ 
+ls -lt|awk '{ print $9 }' > $dir/file.tmp
+ 
+for filename in `cat $dir/file.tmp`
+do
+ftpdel
+echo " $filename deleted from  the remote host $host"
+done
+rm $dir/file.tmp
+rm $dir/detail1
+fi
+ 

@@ -1,0 +1,18 @@
+bash-2.03# more leapyear
+#!/bin/sh
+echo "please enter the year;\t"
+read  year
+if [ `expr $year % 4` -eq 0 ] || [ `expr $year % 400` -eq 0 ]; then
+  echo "$year is a LEAP YEAR"
+     elif [ `expr $year % 100` -eq 0 ] && [ `expr $year % 400` -eq 0 ]; then
+         echo "$year is  LEAP YEAR"
+      elif [ `expr $year % 100` -eq 0 ] && [ `expr $year % 4000` -eq 0 ];then
+   echo "$year is not LEAP YEAR"
+  else
+  echo "$year is not a LEAP YEAR"
+fi
+  mon=`/usr/bin/date|awk '{ print $2 }'`
+  yr=`/usr/bin/date|awk '{ print $6 }'`
+  echo "$mon and $yr"
+ 
+ 

@@ -1,0 +1,285 @@
+
+#!/bin/sh
+##############################################################################
+#Script for isdn test.
+# Ver 1.1
+#Author Nanz
+#Assumption for input
+###################Tacacs Disabled#########################
+#tacacssttaus-2,ip,password,enpassword,interface,dialerstring,isdnid
+##########################################################
+ 
+ 
+###################Tacacs Enabled########################
+#tacacsstatus-1,ip,username,password,interface,dialerstring,isdnid
+##########################################################
+ 
+##############################################################################
+PATH=$PATH:/usr/sbin:/usr/bin
+NETdir=/opt/scripts/
+Idata=/opt/scripts/input/
+Odata=/opt/scripts/output/
+rep1="report-`date +%d-%b-%Y`.log"
+ 
+#tft="ip address"
+ 
+telnet2 ()
+{
+  (  echo  "$upwd"
+    sleep 6
+      echo "en"
+      sleep 6
+        echo "$uenpwd"
+    sleep 6
+ 
+        echo "isdn test call interface $intf $dstr"
+      sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+           echo "isdn  test disconnect interface $intf all"
+        sleep 6
+         echo "exit") | telnet $ip > $NETdir/router.tmp 2> $NETdir/router.err
+}
+telnet4 ()
+{
+  (  echo  "$upwd"
+    sleep 6
+      echo "en"
+      sleep 6
+        echo "$uenpwd"
+    sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+         echo "exit") | telnet $ip > $NETdir/status.tmp 2> $NETdir/router.err
+}
+telnet1 ()
+{
+  (  echo  "$upwd"
+    sleep 6
+        echo "$uenpwd"
+    sleep 6
+ 
+        echo "isdn test call interface $intf $dstr"
+      sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+           echo "isdn  test disconnect interface $intf all"
+        sleep 6
+         echo "exit") | telnet $ip > $NETdir/router.tmp 2> $NETdir/router.err
+}
+telnet3 ()
+{
+  (  echo  "$upwd"
+    sleep 6
+        echo "$uenpwd"
+    sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+         echo "exit") | telnet $ip > $NETdir/status.tmp 2> $NETdir/router.err
+}
+ 
+isdnchk()
+{
+ exec < $Idata/$k
+while read i
+do
+  if [ `echo $i|grep "^$"|wc -l` -eq 1 ]; then
+    continue
+  fi
+ip=`echo $i|awk -F, '{ print $2 }'`
+upwd=`echo $i|awk -F, '{ print $3 }'`
+uenpwd=`echo $i|awk -F, '{ print $4 }'`
+intf=`echo $i|awk -F, '{ print $5 }'`
+dstr=`echo $i|awk -F, '{ print $6 }'`
+                                                           #host=`echo $i|awk -F
+, '{ print $4 }'`
+chk=`echo $i|awk -F, '{ print $1 }'`
+                                                            #cust=`echo $i|awk -
+F, '{ print $1 }'`
+                                                             #loc=`echo $i|awk -
+F, '{ print $9 }'`
+isdnid=`echo $i|awk -F, '{ print $7 }'`
+#rep="`date +%d-%b-%Y`.log"
+ 
+stat1="idle"
+stat2="Connected"
+ 
+  if [ `echo $ip|grep "^$"|wc -l` -eq 1 ]; then
+   echo "$isdnid,7" >>$Odata/$rep
+    continue
+  fi
+  if [ `echo $upwd|grep "^$"|wc -l` -eq 1 ]; then
+   echo "$isdnid,8" >>$Odata/$rep
+    continue
+  fi
+  if [ `echo $uenpwd|grep "^$"|wc -l` -eq 1 ]; then
+   echo "$isdnid,9" >>$Odata/$rep
+    continue
+  fi
+  if [ `echo $intf|grep "^$"|wc -l` -eq 1 ]; then
+   echo "$isdnid,10" >>$Odata/$rep
+    continue
+  fi
+  if [ `echo $dstr|grep "^$"|wc -l` -eq 1 ]; then
+   echo "$isdnid,11" >>$Odata/$rep
+    continue
+  fi
+  if [ `echo $chk|grep "^$"|wc -l` -eq 1 ]; then
+   echo "$isdnid,12" >>$Odata/$rep
+    continue
+  fi
+ if [ `echo  $ip|awk -F. '{ print $2 }'|grep "^$"|wc -l` -eq 1 ] ||  [ `echo $ip
+|awk -F. '{ print NF }'` -ne 4 ]; then
+echo "$isdnid,13" >>$Odata/$rep
+    continue
+  fi
+ 
+ 
+if [ $chk -eq 2 ]; then
+ telnet4
+if [  `cat $NETdir/status.tmp|grep "Connected to $dstr"|wc -l` -eq 1 ]; then
+#  echo "The isdn is already up for the router $ip for the customer $cust locati
+on $loc `date`" >>$Odata/reports
+ echo "$isdnid,1" >>$Odata/$rep
+ continue
+else
+  telnet2
+  telnet4
+ 
+ 
+if [ `cat $NETdir/router.tmp|grep "User Access Verification"|wc -l` -eq 0 ];then
+ # echo "The router $ip-$cust-$loc is not reachable `date`," >>$Odata/reports
+  echo "$isdnid,2" >>$Odata/$rep
+   continue
+  fi
+ 
+   if [ `cat $NETdir/router.tmp|grep "Username"|wc -l` -gt 1 ]; then
+  # echo "The user name password might have changed for the router $ip-$cust-$lo
+c pls check password `date`,">>$Odata/reports
+  echo "$isdnid,3" >>$Odata/$rep
+    continue
+    fi
+ 
+    if [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -gt 0 ]; then
+   #   echo "The isdntest on the interface $intf in the router $ip for the custo
+mer $cust location $loc Successfull `date`" >>$Odata/reports
+  echo "$isdnid,4" >>$Odata/$rep
+ 
+     elif [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -eq 0 ]; t
+hen
+   #echo "The isdntest on the interface $intf in the router $ip for the customer
+  $cust location $loc Failed `date`" >>$Odata/reports
+  echo "$isdnid,5" >>$Odata/$rep
+  fi
+    if [  `cat $NETdir/status.tmp|grep "Connected to $dstr"|wc -l` -eq 1 ]; then
+  #echo "The isdn is not disconnected. please check the router $ip for the custo
+mer $cust  location $loc `date`" >>$Odata/reports
+  echo "$isdnid,6" >>$Odata/$rep
+  echo "$ip isdntest is not disconnected  pleas check ......" >/tmp/alarm.log
+mailx -s"isdntest-warning" email addres< /tmp/alarm.log
+ 
+    fi
+  fi
+fi
+if [ $chk -eq 1 ]; then
+telnet3
+if [  `cat $NETdir/status.tmp|grep "Connected to $dstr"|wc -l` -eq 1 ]; then
+  #echo "The isdn is already up for router $ip for the customer $cust  location
+$loc `date`" >>$Odata/reports
+  echo "$isdnid,1" >>$Odata/$rep
+ 
+  continue
+ else
+  telnet1
+  telnet3
+ 
+if [ `cat $NETdir/router.tmp|grep "User Access Verification"|wc -l` -eq 0 ];then
+ # echo "The router $ip-$cust-$loc is not reachable `date`," >>$Odata/reports
+  echo "$isdnid,2" >>$Odata/$rep
+ 
+   continue
+  fi
+ 
+   if [ `cat $NETdir/router.tmp|grep "Username"|wc -l` -gt 1 ]; then
+  # echo "The user name password might have changed for the router $ip-$cust-$lo
+c pls check password `date`,">>$Odata/reports
+  echo "$isdnid,3" >>$Odata/$rep
+ 
+    continue
+    fi
+ 
+ 
+    if [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -gt 0 ]; then
+      #echo "The isdntest on the interface $intf in the router $ip for the custo
+mer  $cust location $loc Successfull `date`" >>$Odata/reports
+  echo "$isdnid,4" >>$Odata/$rep
+     elif [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -eq 0 ]; t
+hen
+   #echo "The isdntest on the interface $intf in the router $ip for the customer
+  $cust  location $loc Failed `date`" >>$Odata/reports
+  echo "$isdnid,5" >>$Odata/$rep
+  fi
+    if [  `cat $NETdir/status.tmp|grep "Connected to $dstr"|wc -l` -eq 1 ]; then
+  #echo "The isdn is not disconnected. please check the router $ip for the custo
+mer $cust location $loc `date`" >>$Odata/reports
+  echo "$isdnid,6" >>$Odata/$rep
+  echo "$ip isdntest is not disconnected  pleas check ......" >/tmp/alarm.log
+mailx -s"isdntest-warning" Email address < /tmp/alarm.log
+  fi
+ fi
+fi
+done
+ 
+}
+ftpput ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $rep1
+  mput $rep
+ bye
+EOF
+}
+ 
+################################################################################
+##################################
+### Main Script start here.
+################################################################################
+##################################
+con=/opt/scripts/confirm
+rep="`date +%d-%b-%Y`.log"
+rep1=/opt/scripts/report
+ 
+nip=`cat $NETdir/.in.ftp|awk -F, '{ print $1 }'`
+nusr=`cat $NETdir/.in.ftp|awk -F, '{ print $2 }'`
+npas=`cat $NETdir/.in.ftp|awk -F, '{ print $3 }'`
+andir=`cat $NETdir/.in.ftp|awk -F, '{ print $4 }'`
+cd $Idata
+`crontab -l > /tmp/count.log`
+k=`cat /tmp/count.log|grep "corpisdn*"|wc -l`
+ 
+ 
+cd $con
+j=`ls -lt|grep -v "total"|wc -l`
+if [ `ls -lt|grep -v "total"|wc -l` -eq $k ]; then
+ cat $Odata/rep*.log >$rep1/$rep
+   if [ -s /tmp/$rep1 ]; then
+      mailx -s "ISDNTEST from NOC" Email address < $rep1
+   fi
+ ftpput
+ cp $rep1/$rep $NETdir/repbkp/$rep
+ rm $con/confirm*
+ rm $Odata/rep*.log
+ rm $rep1/$rep
+ rm $NETdir/*.err
+ rm $NETdir/*.tmp
+ rm /tmp/count.log
+else
+echo "`date`,not all the jobs completed" >>$NETdir/errs
+fi
+ 
+ 
+ 
+ 
+ 

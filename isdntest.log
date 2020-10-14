@@ -1,0 +1,93 @@
+
+#!/bin/sh
+##############################################################################
+#Script for isdn test.
+##############################################################################
+PATH=$PATH:/usr/sbin:/usr/bin
+NETdir=/opt/nanz/RND
+#tft="IP address"
+telnet1 ()
+{
+  (  echo  "$uid"
+    sleep 2
+        echo "$upwd"
+    sleep 2
+ 
+        echo "isdn call interface $intf $dstr"
+      sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+           echo "isdn disconnect interface $intf 0"
+        sleep 2
+         echo "exit") | telnet $ip  > $NETdir/router.tmp 2> $NETdir/router.err
+}
+ 
+telnet2 ()
+{
+ (  echo  "$upwd"
+    sleep 3
+         echo "copy startup-config tftp "
+      sleep 4
+         echo $tft
+      sleep 4
+         echo "$host"
+      sleep 3
+       echo "\n"
+      sleep 3
+         echo "exit") | telnet $ip >>$NETdir/router.tmp 2>>$NETdir/router.err
+}
+telnet3 ()
+{
+  (  echo  "$upwd"
+    sleep 3
+        echo "en"
+    sleep 3
+     echo "$unpwd"
+       sleep 3
+         echo "copy stratup-config tftp "
+      sleep 4
+         echo $tft
+      sleep 4
+         echo "$host"
+      sleep 3
+       echo "\n"
+      sleep 3
+         echo "exit") | telnet $ip >>$NETdir/router.tmp 2>>$NETdir/router.err
+}
+ 
+ 
+enc=`cat $NETdir/.en`
+crypt <$NETdir/.crystal $enc >$NETdir/.input
+for i in `cat $NETdir/.input`
+ do
+ 
+k=`echo $i|awk -F: '{ print $1 }'`
+   if [ $k -eq 1 ]
+then
+ip=`echo $i|awk -F":" '{ print $3 }'` # router ip
+cust=`echo $i|awk -F":" '{ print $2 }'` # router ip
+uid=`echo $i|awk -F":" '{ print $4 }'` #user name
+upwd=`echo $i|awk -F":" '{ print $5 }'`  #password
+intf=`echo $i|awk -F":" '{ print $6 }'` # interface
+dstr=`echo $i|awk -F":" '{ print $7 }'` # dialer string
+stat1="idle"
+stat2="connected"
+telnet1
+ cat $NETdir/router.tmp| grep "^Connected " > $NETdir/.status
+ 
+ stat=`cat $NETdir/.status|grep "^Connected to $dstr"|wc -l`
+   echo $stat
+      if [ $stat -gt 0 ]
+  then
+    echo "The isdntest on the interface $intf in the router $ip for the customer
+ is $cust Successfull"
+    elif [ $stat -eq 0  ]
+      then
+    echo "The isdntest on the interface $intf in the router $ip for the customer
+ is $cust failed"
+       fi
+ 
+else
+ echo " iam not in the list"
+fi
+done

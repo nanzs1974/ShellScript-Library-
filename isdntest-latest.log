@@ -1,0 +1,203 @@
+bash-2.05# more isdntest1
+#!/bin/sh
+##############################################################################
+#Script for isdn test.
+# Ver 1.1
+#Author Nanz
+#Assumption for input
+###################Tacacs Disabled#########################
+#customername,tacacssttaus-2,ip,hostname,password,enpassword,interface,dialerstr
+ing
+##########################################################
+ 
+ 
+###################Tacacs Enabled########################
+#customername,tacacsstatus-1,ip,hostname,username,password,interface,dialerstrin
+g
+##########################################################
+ 
+##############################################################################
+PATH=$PATH:/usr/sbin:/usr/bin
+NETdir=/opt/scripts/
+Idata=/opt/scripts/input/
+Odata=/opt/scripts/output/
+ 
+#tft="ip address "
+ 
+telnet2 ()
+{
+  (  echo  "$upwd"
+    sleep 2
+      echo "en"
+      sleep 2
+        echo "$uenpwd"
+    sleep 2
+ 
+        echo "isdn test call interface $intf $dstr"
+      sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+           echo "isdn  test disconnect interface $intf all"
+        sleep 2
+         echo "exit") | telnet $ip > $NETdir/router.tmp 2> $NETdir/router.err
+}
+telnet4 ()
+{
+  (  echo  "$upwd"
+    sleep 2
+      echo "en"
+      sleep 2
+        echo "$uenpwd"
+    sleep 2
+      echo "sh dialer int $intf"
+        sleep 2
+         echo "exit") | telnet $ip > $NETdir/status.tmp 2> $NETdir/router.err
+}
+telnet1 ()
+{
+  (  echo  "$upwd"
+    sleep 2
+        echo "$uenpwd"
+    sleep 2
+ 
+        echo "isdn test call interface $intf $dstr"
+      sleep 6
+      echo "sh dialer int $intf"
+        sleep 6
+           echo "isdn  test disconnect interface $intf all"
+        sleep 2
+         echo "exit") | telnet $ip > $NETdir/router.tmp 2> $NETdir/router.err
+}
+telnet3 ()
+{
+  (  echo  "$upwd"
+    sleep 2
+        echo "$uenpwd"
+    sleep 2
+      echo "sh dialer int $intf"
+        sleep 2
+         echo "exit") | telnet $ip > $NETdir/status.tmp 2> $NETdir/router.err
+}
+ 
+isdnchk()
+{
+ for i in `cat $Idata/$k`
+do
+ip=`echo $i|awk -F, '{ print $3 }'`
+upwd=`echo $i|awk -F, '{ print $5 }'`
+uenpwd=`echo $i|awk -F, '{ print $6 }'`
+intf=`echo $i|awk -F, '{ print $7 }'`
+dstr=`echo $i|awk -F, '{ print $8 }'`
+host=`echo $i|awk -F, '{ print $4 }'`
+chk=`echo $i|awk -F, '{ print $2 }'`
+cust=`echo $i|awk -F, '{ print $1 }'`
+stat1="idle"
+stat2="Connected"
+ 
+if [ $chk -eq 2 ]; then
+  telnet2
+  telnet4
+ 
+ 
+if [ `cat $NETdir/router.tmp|grep "User Access Verification"|wc -l` -eq 0 ];then
+  echo "The router $ip-$cust is not reachable `date`," >>$Odata/reports
+   continue
+  fi
+ 
+   if [ `cat $NETdir/router.tmp|grep "Username"|wc -l` -gt 1 ]; then
+   echo "The user name password might have changed for the router $ip-$cust pls
+check password `date`,">>$Odata/reports
+    continue
+    fi
+ 
+    if [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -gt 0 ]; then
+      echo "The isdntest on the interface $intf in the router $ip for the custom
+er is $cust Successfull `date`" >>$Odata/reports
+     elif [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -eq 0 ]; t
+hen
+   echo "The isdntest on the interface $intf in the router $ip for the customer
+is $cust failed `date`" >>$Odata/reports
+  fi
+    if [  `cat $NETdir/status.tmp|grep "Connected to $dstr"|wc -l` -eq 1 ]; then
+  echo "The isdn is not disconnected. please check the router $ip for the custom
+er $cust `date`" >>$Odata/reports
+ fi
+fi
+if [ $chk -eq 1 ]; then
+  telnet1
+  telnet3
+ 
+if [ `cat $NETdir/router.tmp|grep "User Access Verification"|wc -l` -eq 0 ];then
+  echo "The router $ip-$cust is not reachable `date`," >>$Odata/reports
+   continue
+  fi
+ 
+   if [ `cat $NETdir/router.tmp|grep "Username"|wc -l` -gt 1 ]; then
+   echo "The user name password might have changed for the router $ip-$cust pls
+check password `date`,">>$Odata/reports
+    continue
+    fi
+ 
+ 
+    if [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -gt 0 ]; then
+      echo "The isdntest on the interface $intf in the router $ip for the custom
+er is $cust Successfull `date`" >>$Odata/reports
+     elif [ `cat $NETdir/router.tmp|grep "^Connected to $dstr"|wc -l` -eq 0 ]; t
+hen
+   echo "The isdntest on the interface $intf in the router $ip for the customer
+is $cust failed `date`" >>$Odata/reports
+  fi
+    if [  `cat $NETdir/status.tmp|grep "Connected to $dstr"|wc -l` -eq 1 ]; then
+  echo "The isdn is not disconnected. please check the router $ip for the custom
+er $cust `date`" >>$Odata/reports
+ fi
+fi
+ 
+done
+ 
+}
+ftpput ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $Odata
+  mput *
+ bye
+EOF
+}
+ 
+################################################################################
+##################################
+### Main Script start here.
+################################################################################
+##################################
+echo "" >$Odata/reports
+ 
+nip=`cat $NETdir/.in.ftp|awk -F, '{ print $1 }'`
+nusr=`cat $NETdir/.in.ftp|awk -F, '{ print $2 }'`
+npas=`cat $NETdir/.in.ftp|awk -F, '{ print $3 }'`
+andir=`cat $NETdir/.in.ftp|awk -F, '{ print $4 }'`
+ 
+ 
+cd $Idata
+    if [ `ls -alt|wc -l` -eq 3 ]; then
+    echo " There is/are no input files  in input directory  $Idata please check
+`date` ," >>Odata/reports
+     else
+ ls -alt .*.log|awk  '{ print $9 }' >$NETdir/.input
+  if [ -s $NETdir/.input ]; then
+   for k in `cat $NETdir/.input`
+     do
+   if  [ ! -s $Idata/$k ] || [ -z `cat $Idata/$k|awk -F, '{ print $2 }'` ] ;then
+     echo "$k is either zero size or not expected format `date`-pls check filefo
+rmat in $Idata directory, ">>$Odata/reports
+      continue
+     fi
+      isdnchk
+   done
+ else
+echo "no input files in the directory $Idata `date`- pls check" >>$Odata/reports
+  fi
+fi
+ftpput

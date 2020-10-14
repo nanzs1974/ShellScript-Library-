@@ -1,0 +1,36 @@
+#!/bin/sh
+tft="172.16.58.254"
+for  i in `cat ipadd`
+
+  do
+dor j in `cat rout`
+do
+pad=`./enpass`
+touch  $j
+chmod 777 $j
+(  echo  "backup"
+    sleep 3
+        echo $pad
+    sleep 3
+         echo "copy start tftp"
+      sleep 4
+         echo $tft
+     # sleep 4
+          #    echo "inblrnocgw1"
+            sleep 3
+         echo "exit") | telnet $i 
+   crypt md5<$j> $j-encryp
+rm $j
+   done
+done  
+
+
+
+sed -e 's/^$/test/g' sr2 >sr3 
+
+=============================
+enpass  
+=============================
+enc=`cat test`
+crypt <pass1 $enc
+    

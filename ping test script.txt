@@ -1,0 +1,48 @@
+#!/bin/sh
+#set -x
+PATH=$PATH:/usr/bin:/usr/sbin:/bin
+JUMP_HOST1="Host1";
+JUMP_HOST2_PRI="Host2";
+JUMPHOST2_PRI="Host3";
+JUMP_HOST2_SEC="Host4";
+JUMPHOST2_SEC="Host5";
+PING=/usr/sbin/ping
+SNMPGET=/usr/local/bin/snmpget
+SNMP_STRING=public
+SNMP_VERSION=1
+SNMP_CMD=system.sysUpTime.0
+DEVICE_NAME=$1;
+LOG_PATH=/home/wipro
+LOG_NAME="test.log"
+SCRIPT_LOG_FILE="ping_script.log"
+if [ $# -eq 0 ]; then
+    echo "No Input Found,`date`">>${LOG_PATH}/${SCRIPT_LOG_FILE}
+     echo "usage: $0 Devicename"
+exit
+fi
+ping  -c 2 "${JUMP_HOST1}" >> ${LOG_PATH}/${LOG_NAME}
+if [ $? -eq 0 ]; then
+    echo "${JUMP_HOST1} is Alive,`date`">>${LOG_PATH}/${SCRIPT_LOG_FILE}
+     if [ `ssh ${JUMP_HOST1} /bin/ping -c 2 "${JUMPHOST2_PRI}" 2> ${LOG_PATH}/${LOG_NAME} |grep "rtt"|wc -l` -eq 1 ]; then
+            echo "JUMP_HOST2_PRI-->${JUMP_HOST2_PRI} is Alive,`date`">>${LOG_PATH}/${SCRIPT_LOG_FILE}
+            JUMP_HOST2=$JUMP_HOST2_PRI;
+     elif [ `ssh ${JUMP_HOST1} /bin/ping -c 2 "${JUMPHOST2_SEC}" 2> ${LOG_PATH}/${LOG_NAME}|grep "rtt"|wc -l` -eq 1 ]; then
+
+            echo "JUMP_HOST2_PRI-->${JUMP_HOST2_PRI} is not alive,`date`">>${LOG_PATH}/${SCRIPT_LOG_FILE}
+            echo "JUMP_HOST2_SEC-->${JUMP_HOST2_SEC} is alive,`date`">>${LOG_PATH}/${SCRIPT_LOG_FILE}
+             JUMP_HOST2=$JUMP_HOST2_SEC;
+      else
+      echo "JUMP_HOST2_PRI and JUMP_HOST2_SEC are not available"
+     fi
+        if [ `ssh ${JUMP_HOST1} /usr/bin/ssh ${JUMP_HOST2} ${PING} ${DEVICE_NAME}|wc -l` -eq 1 ]; then
+                echo " ${DEVICE_NAME} is reachable"
+                echo "${DEVICE_NAME}, `ssh ${JUMP_HOST1} /usr/bin/ssh ${JUMP_HOST2} ${SNMPGET} -v ${SNMP_VERSION} -c ${SNMP_STRING} ${DEVICE_NAME} ${SNMP_CMD}|awk -F"(" '{ print $2 }'| awk -F")" '{ print $1 }'`"
+        else
+               echo " ${DEVICE_NAME}, timed out"
+        fi
+       else
+     echo "${JUMP_HOST1} is not live"
+fi
+if [ -s ${LOG_PATH}/${LOG_NAME} ]; then
+   rm ${LOG_PATH}/${LOG_NAME}
+fi

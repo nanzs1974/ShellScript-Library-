@@ -1,0 +1,97 @@
+
+#!/bin/sh
+#############################################################
+#telenet script for  Router Configuration backingup script.
+
+# 1=tacacs-enabled
+# 2&3=tacacs-not enabled
+#ipaddress/condition/username/password/enpassword
+# ipaddress/1/username/password//
+#ipaddress/2/ /password/ /
+# ipaddress/3/ /password/enpassword/
+##############################################################################
+PATH=$PATH:/usr/sbin:/usr/bin
+NETdir=/tftpboot
+tft="ip address"
+telnet1 ()
+{
+  (  echo  "$uid"
+    sleep 3
+        echo "$upwd"
+    sleep 3
+         echo "copy startup-config tftp "
+      sleep 4
+         echo $tft
+      sleep 4
+         echo "$host"
+      sleep 3
+       echo "\n"
+      sleep 3
+         echo "exit") | telnet $ip # >> $NETdir/router.tmp 2>> $NETdir/router.er
+r
+}
+ 
+telnet2 ()
+{
+ (  echo  "$upwd"
+    sleep 3
+         echo "copy startup-config tftp "
+      sleep 4
+         echo $tft
+      sleep 4
+         echo "$host"
+      sleep 3
+       echo "\n"
+      sleep 3
+         echo "exit") | telnet $ip >>$NETdir/router.tmp 2>>$NETdir/router.err
+}
+telnet3 ()
+{
+  (  echo  "$upwd"
+    sleep 3
+        echo "en"
+    sleep 3
+     echo "$unpwd"
+       sleep 3
+         echo "copy stratup-config tftp "
+      sleep 4
+         echo $tft
+      sleep 4
+         echo "$host"
+      sleep 3
+       echo "\n"
+      sleep 3
+         echo "exit") | telnet $ip >>$NETdir/router.tmp 2>>$NETdir/router.err
+}
+ 
+ 
+enc=`cat $NETdir/en`
+#crypt <$NETdir/.input.enc $enc >$NETdir/.crystal
+for i in `cat $NETdir/.crystal`
+ do
+ 
+k=`echo $i|awk -F"," '{ print $2 }'`
+   if [ $k -eq 1 ]
+then
+ip=`echo $i|awk -F"," '{ print $1 }'`
+cf="-confg"
+host=$ip$cf
+uid=`echo $i|awk -F"," '{ print $3 }'`
+upwd=`echo $i|awk -F"," '{ print $4 }' `
+touch $NETdir/$host
+chmod 777 $NETdir/$host
+telnet1
+sleep 1
+if [ -s $NETdir/$host ]
+then
+crypt $enc<$NETdir/$host> $NETdir/$host.enrp
+rm $NETdir/$host
+else
+rm $NETdir/$host
+ fi
+elif [ $k -eq 3 ]
+then
+echo "$k calltelnet3"
+ fi
+done
+#rm $NETdir/.crystal

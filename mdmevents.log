@@ -1,0 +1,46 @@
+bash-2.03# more events
+#!/bin/sh
+################################################################################
+######
+#Event Logger for passport
+#
+################################################################################
+######
+PATH=$PATH:usr/bin
+Sdir=/opt/scripts
+Ldir=/var/mdm
+cd $Ldir
+ls -lt >$Sdir/file
+cd $Sdir
+fl=`head -2 file|grep -v total|awk '{ print $9 }'`
+cat $Ldir/$fl|wc -l >$Sdir/count.tmp
+rm $Sdir/file
+      ct=`cat $Sdir/count.tmp`
+      ct1=`cat $Sdir/count1.tmp`
+  if [ $ct -gt $ct1 ]
+ then
+      ct=`cat $Sdir/count.tmp`
+      ct1=`cat $Sdir/count1.tmp`
+      count=`expr $ct - $ct1`
+    tail -$count $Ldir/$fl > $Sdir/alarm.log
+      for i in `cat $Sdir/alarm.log`
+  do
+    echo "$i"
+  done
+ 
+    cp $Sdir/count.tmp $Sdir/count1.tmp
+    echo "$count"
+    elif [ $ct -lt $ct1 ]
+ then
+    tail -$ct $Ldir/$fl > $Sdir/alarm.log
+    for i in `cat $Sdir/alarm.log`
+  do
+    echo "$i" >> $Sdir/alarms
+  done
+ cp $Sdir/count.tmp $Sdir/count1.tmp
+  elif [ $ct -eq $ct1 ]
+then
+  echo "no new alarms" >>$Sdir/alarms
+   fi
+ 
+ 

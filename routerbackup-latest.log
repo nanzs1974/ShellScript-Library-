@@ -1,0 +1,265 @@
+
+#!/bin/sh
+##############################################################################
+#
+# Auth:Nanz
+# Version: 1.1
+# Desc:Router config backup script
+# Input assumption
+# customer,routerip,tacacsStatus,username,password,hostname
+# customer,routerip,tacacsStatus,password,enpassword,hostname
+# Tacacsstatus 1 - enabled  2-disabled ( enpassword is required)
+#############################################################################
+PATH=$PATH:/usr/bin:/usr/sbin:.
+Netdir=/tftpboot
+Rdata=/tftpboot/data/running-config
+Cdata=/tftpboot/data/startup-config
+#tft=`cat $Netdir/.tftp`
+Idata=/tftpboot/input
+#cmd1=`cat $Netdir/.cmd|awk -F, '{ print $1 }'`
+#cmd2=`cat $Netdir/.cmd|awk -F, '{ print $2 }'`
+#############################################################################
+## function starts here
+telnet1 ()
+{
+  (  echo  "$uid"
+    sleep 2
+        echo "$upwd"
+    sleep 2
+         echo "$cmd1"
+      sleep 2
+         echo "$tft"
+      sleep 2
+         echo "$host"
+      sleep 2
+         echo "$cmd2"
+         sleep 1
+        echo "$tft"
+         sleep 2
+         echo "$hostr"
+         sleep 2
+         echo "exit") | telnet $ip  >> $Netdir/router.tmp 2>> $Netdir/router.err
+ 
+}
+telnet2 ()
+{
+  (  echo  "$upwd"
+    sleep 2
+        echo "en"
+    sleep 2
+     echo "$unpwd"
+       sleep 2
+         echo "$cmd1"
+      sleep 2
+         echo "$tft"
+      sleep 2
+         echo "$host"
+      sleep 2
+        echo "$cmd2"
+         sleep 2
+         echo "$tft"
+        sleep 2
+          echo "$hostr"
+          sleep 2
+         echo "exit") | telnet $ip >> $Netdir/router.tmp 2>>$Netdir/router.err
+}
+ 
+ 
+#if [ -s $Netdir/.input.txt ]; then
+    #dos2unix $Netdir/.input.txt $Netdir/.input
+#fi
+ 
+ backup ()
+{
+for i in `cat $Idata/$k`
+ do
+ cust=`echo $i|awk -F, '{ print $1 }'`
+ ip=`echo $i|awk -F, '{ print $2 }'`
+ ht=`echo $i|awk -F, '{ print $6 }'`
+#echo $cust
+  uid=`echo $i|awk -F, '{ print $4 }'`
+ upwd=`echo $i|awk -F, '{ print $5 }'`
+# unpwd=`echo $i|awk -F, '{ print $6 }'`
+#echo "$cust,$ip,$uid,$upwd,$unpwd"
+dr=`date +%d-%m-%y`
+host="$ht-$dr-confg"
+hostr="$ht-$dr-confgr"
+#echo "$host,$hostr"
+touch $Netdir/$host $Netdir/$hostr
+ chmod 777 $Netdir/$host $Netdir/$hostr
+ 
+ 
+ 
+  if [ `echo $i|awk -F, '{ print $3 }'` -eq 1 ]; then
+  telnet1
+  sleep 1
+if [ `cat $Netdir/router.tmp|grep "User Access Verification"|wc -l` -eq 0 ];then
+  echo "The router $ip-$cust is not reachable `date`," >>$Netdir/err.log
+  echo "The router $ip-$cust is not reachable `date`," >>/tmp/tmp.log
+ 
+ rm $Netdir/$host
+ rm $Netdir/$hostr
+   continue
+    fi
+ 
+   if [ `cat $Netdir/router.tmp|grep "Username"|wc -l` -gt 1 ]; then
+   echo "The user name password might have changed for the router $ip-$cust pls
+check password `date`," >>$Netdir/err.log
+   echo "The user name password might have changed for the router $ip-$cust pls
+check password `date`," >>/tmp/tmp.log
+    rm $Netdir/$host
+ rm $Netdir/$hostr
+    continue
+    fi
+   sleep 2
+   if [ -s $Netdir/$host ];then
+  echo " $host backedup succesfully on the date `date`" >>/tmp/tmp.log
+      if [ -d $Cdata/$cust ]; then
+        mv $Netdir/$host $Cdata/$cust/$host
+       elif [ ! -d $Cdata/$cust ]; then
+        mkdir /$Cdata/$cust
+          mv $Netdir/$host $Cdata/$cust/$host
+         fi
+      else
+       echo  " $host   is  zero byte $ip-$cust `date` --please check the permiss
+ion for tftp port ( udp 69)," >> $Netdir/err.log
+       echo  " $host   is  zero byte $ip-$cust `date` --please check the permiss
+ion for tftp port ( udp 69)," >> /tmp/tmp.log
+        rm $Netdir/$host
+  rm  $Netdir/$hostr
+     fi
+  if [ -s $Netdir/$hostr ];then
+  echo " $hostr backedup succesfully on the date `date`" >>/tmp/tmp.log
+      if [  -d  $Rdata/$cust ]; then
+        mv $Netdir/$hostr $Rdata/$cust/$hostr
+       elif [ ! -d $Rdata/$cust ]; then
+        mkdir /$Rdata/$cust
+          mv $Netdir/$hostr $Rdata/$cust/$hostr
+         fi
+      else
+       echo  "  $hostr  is  zero byte $ip-$cust `date` please check the permissi
+on for tftp port ( udp 69)," >> $Netdir/err.log
+       echo  "  $hostr  is  zero byte $ip-$cust `date` please check the permissi
+on for tftp port ( udp 69)," >> /tmp/tmp.log
+                 rm $Netdir/$host
+                rm $Netdir/$hostr
+     fi
+ 
+ 
+ 
+elif [ `echo $i|awk -F, '{ print $3 }'` -eq 2 ]; then
+upwd=`echo $i|awk -F, '{ print $4}'`
+unpwd=`echo $i|awk -F, '{ print $5}'`
+  telnet2
+   sleep 2
+if [ `cat $Netdir/router.tmp|grep "User Access Verification"|wc -l` -eq 0 ];then
+  echo "The router $ip-$cust is not reachable `date`," >>$Netdir/err.log
+  echo "The router $ip-$cust is not reachable `date`," >>/tmp/tmp.log
+  rm $Netdir/$host
+  rm $Netdir/$hostr
+   continue
+    fi
+ 
+if [ `cat $Netdir/router.tmp|grep "Username"|wc -l` -gt 1 ]; then
+   echo "The user name password might have changed for the router $ip- pls check
+ password `date`," >>$Netdir/err.log
+   echo "The user name password might have changed for the router $ip- pls check
+ password `date`," >>/tmp/tmp.log
+rm $Netdir/$host
+rm $Netdir/$hostr
+    continue
+    fi
+ 
+   if [ -s $Netdir/$host ];then
+  echo " $host backedup succesfully on the date `date`" >>/tmp/tmp.log
+ 
+      if [ -d $Cdata/$cust ]; then
+        mv $Netdir/$host $Cdata/$cust/$host
+       elif [ ! -d $Cdata/$cust ]; then
+        mkdir /$Cdata/$cust
+          mv $Netdir/$host $Cdata/$cust/$host
+         fi
+      else
+       echo  "  $host  is  zero byte $ip-$cust `date` --pls check the permission
+ for tftp(udp 69)," >> $Netdir/err.log
+       echo  "  $host  is  zero byte $ip-$cust `date` --pls check the permission
+ for tftp(udp 69)," >> /tmp/tmp.log
+      rm $Netdir/$host
+        rm $Netdir/$hostr
+     fi
+  if [ -s $Netdir/$hostr ];then
+  echo " $hostr backedup succesfully on the date `date`" >>/tmp/tmp.log
+      if [  -d  $Rdata/$cust ]; then
+        mv $Netdir/$hostr $Rdata/$cust/$hostr
+       elif [ ! -d $Rdata/$cust ]; then
+        mkdir /$Rdata/$cust
+          mv $Netdir/$hostr $Rdata/$cust/$hostr
+         fi
+      else
+       echo  " $hostr  is  zero byte $ip-$cust `date` --please check the permiss
+ion for tftp port ( udp 69)," >> $Netdir/err.log
+       echo  " $hostr  is  zero byte $ip-$cust `date` --please check the permiss
+ion for tftp port ( udp 69)," >> /tmp/tmp.log
+     fi
+elif [ `echo $i|awk -F, '{ print $3 }'` -eq 0 ] || [ `echo $i|awk -F, '{ print $
+3 }'` -gt 2 ]; [ -n `echo $i|awk -F, '{ print $3 }'` ] || [ -z `echo $i|awk -F,
+'{ print $3 }'` ]; then
+echo "$k  is not in the expected format-- tacacs status is unknown please check
+$k in $Idata," >>$Netdir/err.log
+echo "$k  is not in the expected format-- tacacs status is unknown please check
+$k in $Idata," >>/tmp/tmp.log
+rm $Netdir/$host
+rm $Netdir/$hostr
+ 
+  fi
+ done
+}
+ 
+ 
+################################################################################
+###########################
+### Main Script start here
+################################################################################
+#############################
+echo "" >/tmp/tmp.log
+if [ ! -s $Netdir/.install ];then
+  $Netdir/precheck
+       touch $Netdir/.install
+    echo " this is script is configured on `date`" >$Netdir/.install
+ fi
+cmd1="copy `cat $Netdir/.cmd|awk -F, '{ print $1 }'` tftp"
+cmd2="copy `cat $Netdir/.cmd|awk -F, '{ print $2 }'` tftp"
+tft=`cat $Netdir/.tftp`
+ if [ -s $Netdir/err.log ]; then
+     rm $Netdir/err.log
+ fi
+cd $Idata
+    if [ `ls -alt|wc -l` -eq 3 ]; then
+    echo " There is/are no input files  in input directory please check the php
+program," >>$Netdir/err.log
+    echo " There is/are no input files  in input directory please check the php
+program," >>/tmp/tmp.log
+     else
+ ls -alt .*.txt|awk  '{ print $9 }' >$Netdir/.input
+  if [ -s $Netdir/.input ]; then
+   for k in `cat $Netdir/.input`
+     do
+   if  [ ! -s $Idata/$k ] || [ -z `cat $Idata/$k|awk -F, '{ print $2 }'` ] ;then
+     echo "$k is either zero size or not expected format `date`-pls check filefo
+rmat in $Idata directory, " >>$Netdir/err.log
+     echo "$k is either zero size or not expected format `date`-pls check filefo
+rmat in $Idata directory, " >>/tmp/tmp.log
+      continue
+     fi
+      backup
+   done
+else
+echo "no input files in the directory $Idata `date`- pls check php is tranfered
+the files r not ??." >>$NETdir/err.log
+echo "no input files in the directory $Idata `date`- pls check php is tranfered
+the files r not ??." >>/tmp/tmp.log
+ 
+fi
+fi
+mailx -s "backup status for routers" Email address< /tmp/tmp.log
+mailx -s "backup status for routers" Email address < /tmp/tmp.log

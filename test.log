@@ -1,0 +1,63 @@
+
+#!/bin/bash
+####################################################################
+# This Script is used to find  no of Files in a given directory for a month
+#ver 1.1
+####################################################################
+PATH=$PATH:/usr/bin:/usr/sbin
+NETdir=/opt/nanz/DIR/RND
+sp=" "
+count=0
+
+             if [ $# -ne 3 ]
+                          then
+                   echo " usage -- $0 10 20 Jul"
+              exit 1
+      fi
+ cd $NETdir
+      
+   if [ $1 -gt $2 ]
+            then
+               i=$1
+                k=`expr $2 - 1`
+     while  test $i != $k
+         do
+         if [ $i -lt 10 ]
+                   then
+                        r=`ls -lt| grep "$3$sp$sp$i"|wc -l`
+                         echo "The No of Files in the Directory $NETdir on The Date $i is:$r"
+                    else
+        r=`ls -lt| grep "$3$sp$i"|wc -l`
+   echo "The No of Files in the Directory $NETdir on The Date $i is:$r"
+    fi
+   count=`expr $count + $r`
+    i=`expr $i - 1`
+ done
+ echo $sp
+ echo $sp
+ echo "The Total Number of files in the Directory $NETdir is:$count"
+
+                      else
+             i=$2
+   k=`expr $1 - 1`
+   while  test $i != $k
+   do
+ 
+        if [ $i -lt 10 ]
+                  then
+                        r=`ls -lt| grep "$3$sp$sp$i"|wc -l`
+               echo "The No of Files in the Directory $NETdir on The Date $i is:$r"
+     else
+   r=`ls -lt| grep "$3$sp$i"|wc -l`
+echo "The No of Files in the Directory $NETdir on The Date $i is:$r"
+   fi
+count=`expr $count + $r`
+    i=`expr $i - 1`
+ done
+echo $sp
+echo $sp
+echo "The Total Number of files in the Directory $NETdir is:$count"
+ fi
+ 
+ 
+

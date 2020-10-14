@@ -1,0 +1,29 @@
+
+#!/bin/sh
+################################################################################
+##############################################
+# THIS PROGRAMME IS TO ANALYSE THE MERIDIAN SYSTEM ERRORS.
+################################################################################
+##############################################
+PATH=$PATH:/usr/sbin:/usr/bin
+NETdir=/opt/nanz/iseva
+#analysis ()
+#{
+for i in `cat $NETdir/err`
+do
+cat $NETdir/meridian1| grep $i > $NETdir/$i.tmp
+done
+cd $NETdir
+ls -lt *.tmp|awk -F" " '{ print $9 }' > $NETdir/name.tmp
+   for j in `cat $NETdir/name.tmp`
+do
+cat $NETdir/$j|awk -F" " '{ print $1 }'|uniq >$NETdir/$j.tmp #uniq erorr numbers
+for k in `cat $NETdir/$j.tmp`
+do
+cat $NETdir/$j|grep $k > $NETdir/BUGS/$k.tmp
+#cat $NETdir/$k.tmp
+#rm $NETdir/$k.tmp
+#/usr/sbin/clear
+    done
+done
+ 

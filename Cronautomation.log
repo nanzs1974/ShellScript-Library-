@@ -1,0 +1,48 @@
+
+#!/bin/sh
+##################################
+#crontab control job
+##################################
+PATH=$PATH:/usr/bin:/usr/sbin
+ifdir=/opt/scripts/input
+sdir=/opt/scripts
+j='$Idata'
+rep="`date +%d-%b-%Y`.log"
+crn=/var/spool/cron/crontabs
+ 
+################################################
+     if [ -s /tmp/cronjunk ]; then
+ 
+             rm /tmp/cronjunk
+     fi
+ 
+         crontab -l|grep -v "corpisdn*" >/tmp/cronjunk
+   cd $ifdir
+    k=`ls -alt .*.log|wc -l`
+    k=`expr $k + 1`
+    i=1
+ 
+      while test $i != $k
+        do
+           if [ -s $sdir/corpisdn$i ]; then
+                rm $sdir/corpisdn$i
+            fi
+       echo "00 19 * * * /opt/scripts/corpisdn$i" >>/tmp/cronjunk
+         cp $sdir/corpisdn $sdir/corpisdn$i
+        echo "k=.$i.log" >>$sdir/corpisdn$i
+         echo "rep=rep$i-`date +%d-%b-%y`.log" >>$sdir/corpisdn$i
+        echo "isdnchk" >>$sdir/corpisdn$i
+        echo "fi" >>$sdir/corpisdn$i
+       echo 'echo "1" >$NETdir/confirm/confirm'$i >>$sdir/corpisdn$i
+ 
+        i=`expr $i + 1`
+      done
+     mv /tmp/cronjunk $crn/root
+     #mv /tmp/cronjunk /opt/root
+     chmod 400 $crn/root
+ 
+     `/etc/init.d/cron stop`
+      sleep 1
+     `/etc/init.d/cron start`
+ 
+ 
