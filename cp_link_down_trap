@@ -1,0 +1,27 @@
+#!/bin/sh
+#set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+##################################
+#mailx -s "2@,@2" Email$Data/mailtest
+##################################
+if [ $# -lt 2 ]; then
+   echo " No input from  HP-NNM `date` ">>$Data/cp_link.err
+    exit
+ else
+ HOST=$1
+ INTERFACE=$2
+ TAGID="`cat $input/.cp_link.log|grep -w "${HOST}"|grep -w "${INTERFACE}"|awk -F, '{ print $2 }'`"
+  if [ `cat $input/.cp_link.log|grep -w "${HOST}"|grep -w "${INTERFACE}"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+  echo "There is no tagid for the interface $interface in the router $host `date`" >>$Data/cp_link.err
+  else
+    DESCRIP="`cat $input/.cp_link.log|grep "${HOST}"|grep "${INTERFACE}"|awk -F, '{ print $1 }'`"
+    echo "${DESCRIP} is down in the router ${HOST}," |mailx -s "10@,@${TAGID}" servicedesk@alerts.Email.net.in 
+    echo "${DESCRIP} is down in the router ${HOST},`date`">>${Data}/cp_link.log
+     
+  fi
+fi
+

@@ -1,0 +1,255 @@
+#!/bin/ksh
+#set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+tagfile=".File_link.log"
+
+nip=
+nusr=sms
+npas=
+andir=/var/spool/sms/OTHER
+
+##################################
+#mailx -s "2@,@2" Email< $Data/mailtest
+##################################
+### SMS FUNCTION######################################
+SMSALERT ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $Data
+  put $HOSTNAME
+ bye
+EOF
+}
+############################################################ 
+
+if [ $# -lt 2 ]; then
+echo " No input from  HP-NNM `date` ">>$Data/CAIRNS.err
+exit
+ else
+host="$1"
+interface="$2"
+ echo "${host},${interface}" >>$Data/Custtest
+
+
+ if [ "$host"="10.53.80.4" ]; then
+
+   case "$interface" in
+
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+    fi
+
+
+        ;;
+
+     esac
+ fi
+
+if [ "$host"="Ip address" ]; then
+
+   case "$interface" in
+
+   "Se0")
+
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+    fi
+
+    
+     ;;
+  esac
+fi
+
+     if [ "$host"="10.53.80.6" ]; then
+
+        case "$interface" in
+
+   "Se0")
+
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+
+    
+       ;;
+    esac
+
+   fi
+    if [ "$host"="10.53.80.35" ]; then
+
+        case "$interface" in
+
+   "Se0")
+
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+
+
+       ;;
+    esac
+
+   fi
+   if [ "$host"="10.53.80.46" ]; then
+
+        case "$interface" in
+
+   "Se0")
+
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+
+
+       ;;
+    esac
+
+   fi
+    if [ "$host"="ip address" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+
+    if [ "$host"="ip address" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+
+    if [ "$host"="ipaddress" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+
+    if [ "$host"="ip address" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+    if [ "$host"="ipaddress" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+    if [ "$host"="ipaddress" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+
+    if [ "$host"="ipaddress" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+
+    if [ "$host"="ipaddress" ]; then
+        case "$interface" in
+   "Se0")
+              tagid="`cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'`"
+     if [ `cat $input/$tagfile|grep -w "$host"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+        echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/CustLink.err
+      else
+        echo "The interface $interface is down on the  router $host"|mailx -s "7@,@$tagid" Email
+        echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/CustLink.log
+     fi
+       ;;
+    esac
+   fi
+
+
+
+
+ 
+fi 
+
+ 
+
+  
+
+

@@ -1,0 +1,91 @@
+#!/bin/sh
+##########################################################################
+
+####  To check  remote agent check status
+####   commands used opcragt
+#########################################################################
+
+PATH=$PATH:/opt/OV/bin/OpC:/usr/bin:/usr/sbin;export PATH
+INPUT=/var/opt/OV/share/script/input
+OUTPUT=/var/opt/OV/share/script/tmp
+HPCMD=opcragt
+FILE=.agent_list
+FILE1=.agentfile
+PING=ping
+
+
+##################################################################################
+##
+###     FUNCTION SECTION#############################################
+   
+UPLOAD ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $Data
+  put $HOSTNAME
+ bye
+EOF
+}
+
+AGENT_CHECK()
+{
+
+ for i in `cat ${INPUT}/${FILE}`    
+  do
+    if [ `${HPCMD} -status $i|grep "is running"|grep -v "grep"|wc -l` -ge 6 ]; then
+       echo "agent is running in the server $i"
+         elif [ `${HPCMD} -status $i|grep "running"|grep -v "grep"|wc -l` -eq 0 ]; then
+          echo " agent is not running  or server $i  is not reachable"
+           elif [ `${HPCMD} -status $i|grep "running"|grep -v "grep"|wc -l` -lt 6 ]; then
+            echo " some of the agent  is not running on the server $i "
+     fi
+ done
+}
+    
+    PINGTEST()
+{
+        SUCCESS=0
+        FAILED=1
+              $PING -c 2 $i >/dev/null
+             if [ $? -ne 0 ]; then
+                    EXIT_CODE=${FAILED}
+                     else
+                      EXIT_CODE=${SUCCESS}  
+             fi
+  }
+
+ ######################################################################################### 
+# Main Function starts here 
+#
+##########################################################################################
+
+  for  i in `cat ${INPUT}/${FILE}`
+
+   do
+     count=0
+      t=0
+        while [ $t -lt 2 ]
+         do
+           PINGTEST
+          count=`expr ${count} + 1`
+               
+              if [ ${count} -eq 2 ] && [ ${STATUS} -eq 1 ] && [ ${EXIT_CODE} -eq 1 ]; then
+                  SUB=`cat ${INPUT}/${FILE1}|grep -w "$i"|awk -F"%" '{ print $2 }'`
+                   echo "The server $i is not reachable from mgmt server ip address ,please check"|mailx -s "${SUB}" Email
+                     echo "Call has been logged for the server $i(${SUB}) on `date`" >>${OUTPUT}/server_reachable.txt
+                  STATUS=0
+              fi 
+             STATUS=${EXIT_CODE} 
+              
+          t=`expr $t + 1` 
+         sleep 10
+        done 
+   done
+ 
+                    
+
+             
+
+

@@ -1,0 +1,25 @@
+#!/bin/sh
+#set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+tagfile=".col_node.log"
+##################################
+#mailx -s "2@,@2" Email< $Data/mailtest
+##################################
+if [ $# -lt 1 ]; then
+echo " No input from  HP-NNM `date` ">>$Data/cpNode.err
+exit
+ else
+node=$1
+tagid="`cat $input/$tagfile|grep -w "$node"|awk -F, '{ print $2 }'`"
+if [ `cat $input/$tagfile|grep -w "$node"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+ echo "There is no tagid for the router $node at `date`" >>$Data/cpNode.err
+else
+  echo "The router $node is down"|mailx -s "10@,@$tagid" servicedesk@alerts.Domain.net.in
+    echo " The router ${node} is down and sent a mail for service desk `date`" >>$Data/cpNode.log
+  fi
+ fi
+

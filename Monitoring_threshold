@@ -1,0 +1,41 @@
+#!/bin/ksh
+#set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/tmp
+input=/opt/scripts/input
+name=".Cust_thresh.log"
+##################################
+#mailx -s "2@,@2" Email < $Data/mailtest
+##################################
+if [ $# -lt 4 ]; then
+echo " No input from  HP-NNM `date` ">>$Data/Cust.err
+exit
+ else
+HOST="$1"
+COLLECT_NAME="$2"
+MIB_INST="$3"
+THRESHOLD_VAL="$4"
+MAX_SAVAL="$5"
+
+    case "${COLLECT_NAME}" in
+
+          "ifInErrors")
+
+                    if [ `cat $input/$name|grep "${MIB_INST}$"|grep "${HOST}"|wc -l` -eq 1 ]; then
+                        ASSET_ID="`cat $input/$name|grep "${MIB_INST}$"|grep "${HOST}"|awk -F"," '{ print $3 }'`"
+                        LINK_NAME="`cat $input/$name|grep "${MIB_INST}$"|grep "${HOST}"|awk -F"," '{ print $4 }'`"
+                        echo "In the link "${LINK_NAME}", the input error exceeds the threshold value ${THRESHOLD_VAL},maximumsample value is ${MAX_SAVAL}"|mailx -s "1@,@1" Email
+
+                    
+                    fi
+
+             ;;
+      esac 
+   
+fi
+
+
+
+

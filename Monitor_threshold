@@ -1,0 +1,62 @@
+#!/bin/ksh
+set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+name=".yes_thresh.log"
+##################################
+#mailx -s "2@,@2" servicedesk@alerts.domain.net.in < $Data/mailtest
+##################################
+ echo "test1 "
+if [ $#  -lt 4 ]; then
+  echo "test3"
+echo " No input from  HP-NNM `date` ">>$Data/domain.err
+exit
+ else
+HOST="$1"
+COLLECT_NAME="$2"
+MIB_INST="$3"
+THRESHOLD_VAL="$4"
+MAX_SAVAL="$5"
+    case "${COLLECT_NAME}" in
+
+          "If%util")
+                    if [ `cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|wc -l` -eq 1 ]; then
+                        ASSET_ID="`cat $input/$name|grep -w "${MIB_INST}"|grep  -w "${HOST}"|awk -F"," '{ print $2 }'`"
+                        LINK_NAME="`cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|awk -F"," '{ print $1 }'`"
+                        echo "In the link ${LINK_NAME}, the % of BW Util  exceeded the threshold value ${THRESHOLD_VAL},maximumsample value is ${MAX_SAVAL} " |mailx -s "8@,@${ASSET_ID}" servicedesk@alerts.domain.net.in
+                       echo "call has been sent to servicedesk, ${HOST},${COLLECT_NAME},${MIB_INST},`date`" >>$Data/domain_thresh.log
+                      else
+                       echo "there is no tag id for the mib instance,${COLLECT_NAME},${MIB_INST},${HOST}" >>$Data/domain_thresh.err   
+                    fi
+             ;;
+
+
+          "IfInPktPctErrors")
+                    if [ `cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|wc -l` -eq 1 ]; then
+                        ASSET_ID="`cat $input/$name|grep -w "${MIB_INST}"|grep  -w "${HOST}"|awk -F"," '{ print $2 }'`"
+                        LINK_NAME="`cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|awk -F"," '{ print $1 }'`"
+                        echo "In the link ${LINK_NAME}, the % of In Packet errors  exceeded the threshold value ${THRESHOLD_VAL},maximumsample value is ${MAX_SAVAL} " |mailx -s "8@,@${ASSET_ID}" servicedesk@alerts.domain.net.in
+                       echo "call has been sent to servicedesk, ${HOST},${COLLECT_NAME},${MIB_INST},`date`" >>$Data/domain_thresh.log
+                      else
+                       echo "there is no tag id for the mib instance,${COLLECT_NAME},${MIB_INST},${HOST}" >>$Data/domain_thresh.err   
+                    fi
+             ;;
+
+
+          "IfOutPktPctErrors")
+                    if [ `cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|wc -l` -eq 1 ]; then
+                        ASSET_ID="`cat $input/$name|grep -w "${MIB_INST}"|grep  -w "${HOST}"|awk -F"," '{ print $2 }'`"
+                        LINK_NAME="`cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|awk -F"," '{ print $1 }'`"
+                        echo "In the link ${LINK_NAME}, the % of out packet errors  exceeded the threshold value ${THRESHOLD_VAL},maximumsample value is ${MAX_SAVAL} " |mailx -s "8@,@${ASSET_ID}" servicedesk@alerts.domain.net.in
+                       echo "call has been sent to servicedesk, ${HOST},${COLLECT_NAME},${MIB_INST},`date`" >>$Data/domain_thresh.log
+                      else
+                       echo "there is no tag id for the mib instance,${COLLECT_NAME},${MIB_INST},${HOST}" >>$Data/domain_thresh.err   
+                    fi
+             ;;
+
+      esac 
+fi
+

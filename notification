@@ -1,0 +1,58 @@
+#!/usr/bin/ksh
+set -x
+##########################################################
+##
+### THIS is the Test script for HP-OPENVIEW Notification system
+#
+############################################################
+# PATH SETTINGS AND VARIABLES USED IN THIS SCRIPT
+#############################################################
+PATH=$PATH:/usr/bin:/sbin:/usr/sbin:/usr/xpg4/bin
+export PATH
+nip=Ip address
+nusr=sms
+npas=****
+andir=/var/spool/sms/OTHER
+Data=/tmp
+HOSTNAME=$2
+MSG=${13}
+DATERECV=$6
+TIMERECV=$7
+SEVIRETY=${11}
+GREP=/usr/xpg4/bin/grep
+input=/var/opt/OV/share/script/input
+EMAIL="Email"
+##########################################################################
+# FUNCTIONS USED IN THE MAIN SCRIPT
+#
+######################################################################
+SMSALERT ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $Data
+  put $HOSTNAME
+ bye
+EOF
+}
+
+##########################################################################################################
+case "$HOSTNAME" in 
+
+  "hostname"|"Email"|"Email"|"Emal")
+
+    echo "FOllowing is the alert for the server $HOSTNAME \n\
+           Problem Description: ${10},${13}                     \n\
+           Sevirety           :  ${11}                \n\
+           DATE&TIME        :  $6-$7"|mailx -s "HP alert for ${HOSTNAME}" ${EMAIL}
+
+       TAGID="`cat $input/.Cus_serverasset|grep -w "${HOSTNAME}"|awk -F, '{ print $2 }'`"
+    echo "FOllowing is the alert for the server $HOSTNAME \n\
+           Problem Description: ${10},${13}                     \n\
+           Sevirety           :  ${11} "|mailx -s "5@,@${TAGID}" Email
+
+
+  
+     ;; 
+esac 

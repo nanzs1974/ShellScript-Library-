@@ -1,0 +1,43 @@
+#!/bin/ksh
+set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+name=".cp_thresh.log"
+##################################
+#mailx -s "2@,@2" Email< $Data/mailtest
+##################################
+if [ $# -lt 4 ]; then
+echo " No input from  HP-NNM `date` ">>$Data/cp.err
+exit
+ else
+HOST="$1"
+COLLECT_NAME="$2"
+MIB_INST="$3"
+THRESHOLD_VAL="$4"
+MAX_SAVAL="$5"
+
+    case "${COLLECT_NAME}" in
+
+          "If%util")
+
+                    if [ `cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|wc -l` -eq 1 ]; then
+                        ASSET_ID="`cat $input/$name|grep -w "${MIB_INST}"|grep  -w "${HOST}"|awk -F"," '{ print $2 }'`"
+                        LINK_NAME="`cat $input/$name|grep -w "${MIB_INST}"|grep -w "${HOST}"|awk -F"," '{ print $1 }'`"
+                        echo "In the link "${LINK_NAME}", the input error exceeds the threshold value ${THRESHOLD_VAL},maximumsample value is ${MAX_SAVAL} " |mailx -s "10@,@${ASSET_ID}" servicedesk@alerts.Domain.net.in
+                       echo "call has been sent to servicedesk, ${HOST},${COLLECT_NAME},${MIB_INST},`date`" >>$Data/cp_thresh.log
+
+                      else
+                       echo "there is no tag id for the mib instance,${COLLECT_NAME},${MIB_INST},${HOST}" >>$Data/cp_thresh.err   
+                    fi
+
+             ;;
+      esac 
+   
+fi
+
+
+
+

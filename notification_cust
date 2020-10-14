@@ -1,0 +1,76 @@
+#!/usr/bin/ksh
+set -x
+##########################################################
+##
+### THIS is the Test script for HP-OPENVIEW Notification system
+#
+############################################################
+# PATH SETTINGS AND VARIABLES USED IN THIS SCRIPT
+#############################################################
+PATH=$PATH:/usr/bin:/sbin:/usr/sbin:/usr/xpg4/bin
+export PATH
+nip=ipaddress
+nusr=sms
+npas=*****
+andir=/var/spool/sms/OTHER
+Data=/var/opt/OV/share/script/tmp
+HOSTNAME=$2
+MSG=${13}
+DATERECV=$6
+TIMERECV=$7
+SEVERITY=${11}
+GREP=/usr/xpg4/bin/grep
+input=/var/opt/OV/share/script/input
+EMAIL="Email"
+EMAIL1="Email"
+##########################################################################
+# FUNCTIONS USED IN THE MAIN SCRIPT
+#
+######################################################################
+SMSALERT ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $Data
+  put $HOSTNAME
+ bye
+EOF
+}
+
+##########################################################################################################
+case "$HOSTNAME" in 
+  "Host1")
+    echo "FOllowing is the alert for the server $HOSTNAME \n\
+           Problem Description: ${10},${13}                     \n\
+           Severity           :  ${11}"|mailx -s "HP alert for ${HOSTNAME}" ${EMAIL}
+
+            if [ ${11}="critical" ]; then
+              TAGID="`cat $input/.cust_serverasset|grep -w "${HOSTNAME}"|awk -F, '{ print $2 }'`"
+              echo "FOllowing is the alert for the server $HOSTNAME \n\
+              Problem Description: ${10},${13}                     \n\
+              Sevirety           :  ${11} "|mailx -s "6@,@${TAGID}" ${EMAIL1}
+           fi
+  
+     ;; 
+esac 
+
+case "$HOSTNAME" in 
+  "Host"|"Email"|"Email"|"Email"|"Email"|"Email"|"Email")
+    echo "FOllowing is the alert for the server $HOSTNAME \n\
+           Problem Description: ${10},${13}                     \n\
+           Sevirety           :  ${11}"|mailx -s "HP alert for ${HOSTNAME}" ${EMAIL}
+           # if [ ${11}="critical" ]; then
+           #   TAGID="`cat $input/.cust_serverasset|grep -w "${HOSTNAME}"|awk -F, '{ print $2 }'`"
+           #   echo "FOllowing is the alert for the server $HOSTNAME \n\
+           #   Problem Description: ${10},${13}                     \n\
+           #   Sevirety           :  ${11} "|mailx -s "6@,@${TAGID}" ${EMAIL1}
+           #fi
+  
+     if [ "${11}" = "critical" ]; then
+          TAGID="`cat $input/.cust_serverasset|grep -w "${HOSTNAME}"|awk -F, '{ print $2 }'`"
+              echo "${10},${13},${HOSTNAME}"|mailx -s "6@,@${TAGID}" ${EMAIL1}
+              echo "${10},${13},${HOSTNAME}" >>$Data/custsvr.log
+     fi
+     ;;
+esac

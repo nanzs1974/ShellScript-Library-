@@ -1,0 +1,26 @@
+#!/bin/sh
+#set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+name="Cust_link_down"
+tagfile=".Cust_node.log"
+##################################
+#mailx -s "2@,@2" Email< $Data/mailtest
+##################################
+if [ $# -lt 1 ]; then
+echo " No input from  HP-NNM `date` ">>$Data/Cust.err
+exit
+ else
+node=$1
+tagid="`cat $input/$tagfile|grep -w "$node"|awk -F, '{ print $1 }'`"
+if [ `cat $input/$tagfile|grep -w "$node"|awk -F, '{ print $1 }'|wc -l` -eq 0 ]; then
+ echo "There is no tagid for the router $node at `date`" >>$Data/Cust.err
+else
+  echo "The router $node is down"|mailx -s "8@,@$tagidEmail
+  echo "Mail has been sent servicedesk for the incident on router ${node},`date`">>$Data/Cust.log
+  fi
+ fi
+

@@ -1,0 +1,35 @@
+#!/bin/sh
+########################
+
+# sms-alerts to Critical services.
+#################################################
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/tmp
+nip=ip address
+nusr=sms
+npas=****
+andir=/var/spool/sms/OTHER
+input=//var/opt/OV/share/scripts/input
+name="isb-`date +%d-%m-%Y-%H-%m-%S`.sms"
+##################################
+ftpput ()
+{
+ftp -ni $nip << EOF
+ user $nusr $npas
+ cd $andir
+ lcd $Data
+  put $name
+ bye
+EOF
+}
+#msg="$1"
+#msg1="${13}"
+#echo "From: MsgC" >$Data/$name
+#echo "To: Mobnumber" >>$Data/$name
+#echo "" >>/$Data/$name
+#echo "$msg,$msg1" >>$Data/$name
+#ftpput
+#msg="$1"
+

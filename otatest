@@ -1,0 +1,26 @@
+#!/bin/sh
+####################
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+INPUT=/var/opt/OV/share/script/input
+FILENAME="KnowledgeBase"
+EMAIL="Email"
+
+##################################
+ERR_CODE=$2
+OAGT=$3
+ISODATA=$4
+GREP="/usr/xpg4/bin/grep"
+
+DES="`cat $INPUT/$FILENAME|$GREP $ERR_CODE|awk -F, '{ print $3 }'`"
+SEV="`cat $INPUT/$FILENAME|$GREP $ERR_CODE|awk -F, '{ print $2 }'`"
+echo $DES
+ 
+echo "Error Generated from $OAGT :    \n\
+    
+      SEVERITY:       $SEV            \n\
+      ERRORCODE:      $ERR_CODE       \n\
+      OPERATORDATA:   $ISODATA        \n\
+      ERRORDESCRPTION: $DES" | mailx -s "1@,@AIRKARBLRMER01" $EMAIL 
+
+

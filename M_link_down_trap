@@ -1,0 +1,27 @@
+#!/bin/sh
+#set -x
+####################3
+# 
+PATH=$PATH:/usr/bin:/usr/sbin
+Data=/var/opt/OV/share/script/tmp
+input=/var/opt/OV/share/script/input
+tagfile=".Cust_link.log"
+##################################
+#mailx -s "2@,@2" Email< $Data/mailtest
+##################################
+if [ $# -lt 2 ]; then
+echo " No input from  HP-NNM `date` ">>$Data/Cust.err
+exit
+ else
+host=$1
+interface=$2
+tagid="`cat $input/$tagfile|grep -w "$host"|grep -w "${interface}"|awk -F, '{ print $2 }'`"
+DESC="`cat $input/$tagfile|grep -w "$host"|grep -w "${interface}"|awk -F, '{ print $4 }'`"
+if [ `cat $input/$tagfile|grep -w "$host"|grep -w "${interface}"|awk -F, '{ print $2 }'|wc -l` -eq 0 ]; then
+ echo "There is no tagid for the router $host, link $interface at `date`" >>$Data/Cust.err
+else
+  echo "The interface $interface(${DESC}) is down on the  router $host"|mailx -s "8@,@$tagidEmail
+   echo " The call has been sent to service desk for the router ${host},interface ${interface},`date`" >>$Data/Cust.log
+  fi
+ fi
+
